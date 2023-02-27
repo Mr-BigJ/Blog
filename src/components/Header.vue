@@ -89,15 +89,20 @@ export default {
         })
     },
     search() {
-      console.log(this.$route.path)
+      if(this.searchInfo == "" | this.searchInfo.trim() == ""){
+        alert("请填写关键字")
+        return
+      }
       let formdata = new FormData()
       formdata.append("searchInfo", this.searchInfo)
+      formdata.append("page", 1)
       if (this.$route.path === '/blogList') {
         this.$axs.post("http://localhost:8878/pro/blog/search", formdata)
           .then((val) => {
             if (val.code === 401) {
               this.$router.push("/")
-            } else {
+            }
+            else {
               this.$emit("searchInfo", val)
             }
 

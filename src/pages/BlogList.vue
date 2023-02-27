@@ -5,18 +5,6 @@
     <Header v-on:searchInfo="getSearchInfo" :title="'--主页--  '" :style="{width: windowWidth * 0.4 + 'px', 'margin-left': windowWidth * 0.3 + 'px',color:white,'font-size':large}" />
     <LeftSize/>
 
-    <!-- 轮播图 -->
-    <!-- <div id="banner">
-      动态将图片轮播图的容器高度设置成与图片一致
-      <el-carousel :height="bannerHeight + 'px'" >
-        遍历图片地址,动态生成轮播图
-        <el-carousel-item v-for="item in img_list" :key="item">
-          <img :src="item" alt />
-        </el-carousel-item>
-      </el-carousel>
-    </div> -->
-
-
     <div v-for="content in contents.data.slice(start, end)" :key="content.id" 
       :style="{width:windowWidth * 0.4 + 'px','margin-left': windowWidth * 0.3 + 'px', 'list-style-type': none}">
       <el-card style="width: 800px" >
@@ -49,7 +37,7 @@
     <!-- 分页 -->
     <div v-show="contents.length === 0 ? false : true" class="block" style="width: 80px; margin-left: 40%">
       <span class="demonstration"></span>
-      <el-pagination layout="prev, pager, next" :total="contents.data.length" @current-change="currentChange"
+      <el-pagination layout="prev, pager, next" :total="1000" @current-change="currentChange"
         :current-page.sync="page" page-size="10">
       </el-pagination>
     </div>
@@ -77,11 +65,7 @@ export default {
       sum: 0,
       start: 0,
       end: 10,
-      img1: "../assets/buzan.jpg",
-      img2: "",
-      img3: "",
-      img4: "",
-      img_list: [this.img1, this.img2, this.img3, this.mg4],
+
     };
   },
   methods: {
@@ -122,23 +106,28 @@ export default {
       });
     },
     currentChange() {
-      this.start = (this.page - 1) * 10;
-      this.end = this.page * 10;
+      
+      var page = new FormData();
+      page.append("pageNo", this.page);
+    this.$axs.post(`http://localhost:8878/pro/blog/content`,page).then((val) => {
+      if (val.code === 401) {
+        localStorage.removeItem('token')
+        alert("請重新登錄")
+        this.$router.push("/")
+      } else {
+        this.contents = val;
+      }
+    });
     },
   },
   mounted() {
-  
-
-
-
-
-    this.$axs.post(`http://localhost:8878/pro/blog/content`).then((val) => {
+  var pageNo = new FormData();
+      pageNo.append("pageNo", 1);
+    this.$axs.post(`http://localhost:8878/pro/blog/content`,pageNo).then((val) => {
       if (val.code === 401) {
         localStorage.removeItem('token')
         alert("請重新登錄")
         this.$router.push("/");
-
-
       } else {
         this.contents = val;
       }
