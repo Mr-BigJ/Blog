@@ -1,14 +1,32 @@
 
 <template>
   <div class="login block">
+    <Header
+      v-on:searchInfo="getSearchInfo"
+      :title="'--主页--  '"
+      :style="{
+        width: windowWidth * 0.4 + 'px',
+        'margin-left': windowWidth * 0.3 + 'px',
+        color: 'red',
+      }"
+    />
+    <LeftSize />
 
-    <Header v-on:searchInfo="getSearchInfo" :title="'--主页--  '" :style="{width: windowWidth * 0.4 + 'px', 'margin-left': windowWidth * 0.3 + 'px',color:white,'font-size':large}" />
-    <LeftSize/>
-
-    <div v-for="content in contents.data.slice(start, end)" :key="content.id" 
-      :style="{width:windowWidth * 0.4 + 'px','margin-left': windowWidth * 0.3 + 'px', 'list-style-type': none}">
-      <el-card style="width: 800px" >
-        <h4 style="cursor: pointer" id="title" @click="gotoDetail(content), updateLook('updateLook', content.id)">
+    <div
+      v-for="content in contents.data.slice(start, end)"
+      :key="content.id"
+      :style="{
+        width: windowWidth * 0.4 + 'px',
+        'margin-left': windowWidth * 0.3 + 'px',
+        'list-style-type': 'none',
+      }"
+    >
+      <el-card style="width: 800px">
+        <h4
+          style="cursor: pointer"
+          id="title"
+          @click="gotoDetail(content), updateLook('updateLook', content.id)"
+        >
           {{ content.title }}
         </h4>
         <p>{{ content.description }}</p>
@@ -16,9 +34,10 @@
         &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
         &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
         &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
-        <br>
+        <br />
         <span style="color: #0f0050">总点赞数:</span>
-        <span style="color: #cc00dd; font-size: 20px">{{ content.praise }}</span>&emsp;&emsp;
+        <span style="color: #cc00dd; font-size: 20px">{{ content.praise }}</span
+        >&emsp;&emsp;
         <span style="color: #abcdfe">总踩数:</span>
         <span style="color: #bbffdd; font-size: 20px">{{
           content.unpraise
@@ -27,18 +46,28 @@
         <span style="color: #512132">总访问量:</span>
         <span style="color: #bbffdd; font-size: 20px">{{ content.look }}</span>
         &ensp;&ensp;
-        <a title="查看角色信息" style="cursor: pointer; color: blue" @click="gotoUserDetail(content.username)">{{
-          content.username
-        }}</a>
+        <a
+          title="查看角色信息"
+          style="cursor: pointer; color: blue"
+          @click="gotoUserDetail(content.username)"
+          >{{ content.username }}</a
+        >
         &ensp;&ensp;
       </el-card>
     </div>
 
     <!-- 分页 -->
-    <div v-show="contents.length === 0 ? false : true" class="block" style="width: 80px; margin-left: 40%">
+    <div
+      v-show="contents.length === 0 ? false : true"
+      class="block"
+      style="width: 180px; margin-left: 50%">
       <span class="demonstration"></span>
-      <el-pagination layout="prev, pager, next" :total="1000" @current-change="currentChange"
-        :current-page.sync="page" page-size="10">
+      <el-pagination 
+        layout="prev, next"
+        :total="contents.length"
+        @current-change="currentChange"
+        :current-page.sync="page"
+      >
       </el-pagination>
     </div>
   </div>
@@ -47,32 +76,33 @@
 <script>
 import Header from "../components/Header.vue";
 import ScaleBox from "vue2-scale-box";
-import LeftSize from "../components/LeftSize.vue"
+import LeftSize from "../components/LeftSize.vue";
 export default {
   name: "BlogList",
   components: {
     Header,
     ScaleBox,
-    LeftSize
+    LeftSize,
   },
   data() {
     return {
-
-      windowWidth: document.documentElement.clientWidth,  //实时屏幕宽度
-      windowHeight: document.documentElement.clientHeight,   //实时屏幕高度
+      windowWidth: document.documentElement.clientWidth, //实时屏幕宽度
+      windowHeight: document.documentElement.clientHeight, //实时屏幕高度
       contents: [],
       page: 1,
       sum: 0,
       start: 0,
       end: 10,
-
     };
   },
   methods: {
-    
-
     getSearchInfo(e) {
+      if(e.code == 909){
+        alert("没有相关记录")
+        return
+      }
       this.contents = e;
+      this.page = 1;
     },
     gotoUserDetail(username) {
       this.$router.push({
@@ -89,7 +119,7 @@ export default {
         .post(`http://localhost:8878/pro/blog/updateLook`, formdata)
         .then((res) => {
           if (res.code === 401) {
-            localStorage.removeItem('token')
+            localStorage.removeItem("token");
             this.$router.push("/");
           }
           if (res.code === 808) {
@@ -106,36 +136,56 @@ export default {
       });
     },
     currentChange() {
-      
-      var page = new FormData();
-      page.append("pageNo", this.page);
-    this.$axs.post(`http://localhost:8878/pro/blog/content`,page).then((val) => {
-      if (val.code === 401) {
-        localStorage.removeItem('token')
-        alert("請重新登錄")
-        this.$router.push("/")
+      if (localStorage.getItem("searchStr") != null) {
+        let formdata = new FormData();
+        formdata.append("searchInfo", localStorage.getItem("searchStr"));
+        formdata.append("page", this.page);
+        this.$axs
+          .post("http://localhost:8878/pro/blog/search", formdata)
+          .then((val) => {
+            if (val.code === 909) {
+              this.contents = []
+              alert("没有更多记录了")
+
+            } else {
+              this.contents = val;
+            }
+          });
       } else {
-        this.contents = val;
+        var page = new FormData();
+        page.append("pageNo", this.page);
+        this.$axs
+          .post(`http://localhost:8878/pro/blog/content`, page)
+          .then((val) => {
+            if (val.code === 401) {
+              localStorage.removeItem("token");
+              alert("請重新登錄");
+              this.$router.push("/");
+            } else {
+              this.contents = val;
+            }
+          });
       }
-    });
     },
   },
   mounted() {
-  var pageNo = new FormData();
-      pageNo.append("pageNo", 1);
-    this.$axs.post(`http://localhost:8878/pro/blog/content`,pageNo).then((val) => {
-      if (val.code === 401) {
-        localStorage.removeItem('token')
-        alert("請重新登錄")
-        this.$router.push("/");
-      } else {
-        this.contents = val;
-      }
-    });
+    var pageNo = new FormData();
+    pageNo.append("pageNo", 1);
+    this.$axs
+      .post(`http://localhost:8878/pro/blog/content`, pageNo)
+      .then((val) => {
+        if (val.code === 401) {
+          localStorage.removeItem("token");
+          alert("請重新登錄");
+          this.$router.push("/");
+        } else {
+          this.contents = val;
+        }
+      });
   },
   // 注意，在$emit时，必须已经$on，否则将无法监听到事件。
   // 所以正确的写法应该是在需要接收值的组件的created生命周期函数里写$on，在需要往外传值的组件的destroyed生命周期函数函数里写$emit
-  destroyed() { },
+  destroyed() {},
 };
 </script>
 
@@ -144,8 +194,6 @@ export default {
 
 
 <style scope>
-
-
 img {
   /*设置图片宽度和浏览器宽度一致*/
   width: 30%;
@@ -176,8 +224,6 @@ p {
   /*左边距*/
   background-size: 100% 100%;
 }
-
-
 
 .contents {
   position: fixed;

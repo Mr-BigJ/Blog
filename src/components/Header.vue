@@ -18,7 +18,7 @@
       
       <el-popover placement="top-start" width="200" trigger="hover" style="margin-left: 20%; text-align: center">
 
-          <el-image :src="avatarImg" slot="reference" @click="goto" style="width: 30px;" :fit="fit" />
+          <el-image :src="avatarImg" slot="reference" @click="goto" style="width: 30px;" :fit='fit' />
 
         
         <h4>{{ username }}</h4>
@@ -90,9 +90,24 @@ export default {
     },
     search() {
       if(this.searchInfo == "" | this.searchInfo.trim() == ""){
+        localStorage.removeItem("searchStr")
+        var page = new FormData();
+        page.append("pageNo", 1);
+        this.$axs
+          .post(`http://localhost:8878/pro/blog/content`, page)
+          .then((val) => {
+            if (val.code === 401) {
+              localStorage.removeItem("token");
+              alert("請重新登錄");
+              this.$router.push("/");
+            } else {
+              this.$emit("searchInfo", val)
+            }
+          });
         alert("请填写关键字")
         return
       }
+      localStorage.setItem("searchStr",this.searchInfo)
       let formdata = new FormData()
       formdata.append("searchInfo", this.searchInfo)
       formdata.append("page", 1)

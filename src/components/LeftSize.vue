@@ -12,7 +12,8 @@
             <el-image :style="{ width: windowWidth * 0.2 + 'px', height: windowHeight * 0.1 + 'px' }" :src="avatarImg"
                 :fit="none">zxgds</el-image>
                 <el-image :src="avatarImg" slot="reference" @click="goto" :style="{width: 60+'px','margin-left': 10 + 'px','margin-top': -30 + 'px'}" :fit="fit" />
-                <p :style="{ 'margin-left': windowHeight * 0.1 + 'px','font-size':'30px','margin-top':-50+'px','font-color':'red' }">{{ username }}</p>
+                <p :style="{ 'margin-left': windowHeight * 0.1 + 'px','font-size':'30px','margin-top':-20+'px','font-color':'red' }">{{ username }}</p>
+                <p style="color:grey;font-size:large;margin-top:-10px;margin-left:30px">座右铭--君不见黄河之水天上来，</p>
                 
 
 
